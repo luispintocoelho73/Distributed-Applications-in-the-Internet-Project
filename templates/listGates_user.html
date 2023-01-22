@@ -1,0 +1,22 @@
+{% extends 'layout_admin.html' %}
+
+{% block content %}
+<h3>List of Gates</h3>
+<table style="width: 100%">
+    <tr>
+        <th>ID</th>
+        <th>Location</th>
+        <th>Gate Opens</th>
+        <th>Secret</th>
+      </tr>
+    {% for gates in list %}
+    <tr>
+      <td>{{gates.gateID}}</td>
+      <td>{{gates.gateLocation}}</td>
+      <td>{{gates.gateOpens}}</td>
+      <td>{{gates.gateSecret}}</td>
+    </tr>
+    {% endfor %}
+</table>
+  
+{% endblock %}

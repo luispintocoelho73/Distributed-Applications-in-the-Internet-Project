@@ -1,0 +1,15 @@
+{% extends 'layout_admin.html' %}
+
+{% block content %}
+    <div>
+   <form action = "createGate" method="post">
+    Gate ID Number:
+    <textarea id="gateID" name="gateID" rows="1" cols="12"></textarea>
+    
+    <p>Gate Location:</p>
+    <textarea id="gateLocation" name="gateLocation" rows="12" cols="35"></textarea>
+    <p>Press the submit button to store the gate on the GateData Service</p>
+   <input type="submit">
+</form>
+    </div>
+    {% endblock %}

@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css"  href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.css">
+    <script  src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.7/dist/semantic.js">  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-xmlrpc/0.4.3/jquery.xmlrpc.js"> </script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+
+    <style>
+      #gate-light {
+      height: 415px;
+      width: 200px;
+      background-color: #333;
+      float: left;
+      border-radius: 40px;
+      margin: 30px 0;
+      padding: 20px;
+      }
+      .bulb {
+      height:150px;
+      width:150px;
+      background-color: #111;
+      border-radius: 50%;margin: 25px auto;    
+      margin: 25px auto;
+      }
+      .result{
+        background-color: green;
+        color:#fff;
+        padding:20px;
+      }
+      .row{
+        display:flex;
+      }
+    </style>
+
+    <script>
+        // to-do after when a gate log-in is successful
+        function changeToLogInState(gate_id){
+          document.getElementById('gate-id').textContent = "Gate " + gate_id
+          $("#logInErrorText").hide()
+          $("#logInSuccessText").hide()
+          $('#logged-in-state').show()
+          $('#logged-out-state').hide()
+          $('#welcome-text').hide()
+          $('#gateInvalidCodeText').hide()
+          $('#gateOpenText').hide()
+          document.getElementById('red-light').style.backgroundColor = "red"
+        }
+        // to-do when a gate log-in is unsuccessful
+        function failedLogIn(){
+          $("#logInErrorText").show()
+        }
+        // checks if a gate id with a gate secret exists by reaching into the API/checkGateExists endpoint for validation
+        function checkGateExists(){
+          try{
+            gate_id = document.getElementById('logInGateID').value
+            gate_secret = document.getElementById('logInGateSecret').value
+            $.ajax({
+                url: 'API/checkGateExists',
+                type: "GET",
+                data: {gateID: gate_id, gateSecret: gate_secret},
+                success: function (data) {
+                  if (data == "True") {
+                    changeToLogInState(gate_id)
+                    return "True"
+                  }
+                  else {
+                    failedLogIn()
+                    return "False"
+                  }
+                }
+            });
+          }
+          catch (e){
+            return "False"
+          }
+        }
+
+        $(document).ready(function(){
+            $("#logInErrorText").hide()
+            $('#logged-in-state').hide()
+            $('#logged-out-state').show()
+
+            // to-do after clicking on the gate log-in button
+            $("#buttonLogIn").click(function(){
+              checkGateExists()
+            })
+            
+            // to-do after clicking on the gate log-out button
+            $("#buttonLogOut").click(function(){
+              $("#logInErrorText").hide()
+              $("#logInSuccessText").hide()
+              $('#logged-in-state').hide()
+              $('#logged-out-state').show()
+            })
+        });
+        
+    </script>
+
+  </head>
+  <body>
+    <div id="logged-out-state">
+      <h3 id="gateLogInText">Gate Log-in</h3>
+      <div class="ui input" style="text-align: center;">
+        <input type="text" placeholder="Gate ID" id="logInGateID">
+      </div>
+      <br>
+      <div class="ui input" style="text-align: center;">
+        <input type="text" placeholder="Gate Secret" id="logInGateSecret">
+      </div>
+      <br>
+      <button class="ui button" id="buttonLogIn" style="text-align: center;">
+        Log-in
+      </button>
+    <h5 style="color:#FF0000" id="logInErrorText">Log-In Error: Not Able to Authenticate the Gate.</h2>
+    </div>
+    <div id="logged-in-state">
+      <div id="gate-light">
+        <div class="bulb" id="green-light" ></div>
+        <div class="bulb" id="red-light"></div>
+      </div>
+      <h1 id="gate-id"></h1>
+      <button class="ui button" id="buttonLogOut">
+        Log-out
+      </button>
+      <div class="row">
+        <div class="col">
+          <div style="width:500px;" id="reader"></div>
+        </div>
+        <div class="col" style="padding:30px;">
+          <div id="result"></div>
+        </div>
+      </div>
+      <h2 id="gateOpenText">Code Valid! The gate will close in 5 s!</h2>
+      <h2 style="color:#FF0000" id="gateInvalidCodeText">Code Not valid !</h2>
+    </div>
+
+    <script>
+      // executed in order to close the gate and resume the scanning
+      function changeToGateLocked(){
+        $("#gateOpenText").hide()
+        document.getElementById('red-light').style.backgroundColor = "red"
+        document.getElementById('green-light').style.backgroundColor = "black" 
+        html5QrcodeScanner.resume()     
+      }
+
+      // in case a qr code is invalid
+      function keepGateLockedState(){
+        $("#gateInvalidCodeText").show()
+      }
+
+      // in case a qr code is detected
+      function onScanSuccess(qrCodeMessage) {
+        document.getElementById('result').innerHTML = '<span class="result">'+qrCodeMessage+'</span>';
+        $('#result').hide()
+        // scanning is paused
+        html5QrcodeScanner.pause()
+        qrCodeMessageSplit = qrCodeMessage.split(" ")
+        userId = qrCodeMessageSplit[0]
+        userCode = qrCodeMessageSplit[1]
+        gate_id_full = document.getElementById('gate-id').textContent;
+        gate_id_split = gate_id_full.split(" ")
+        gateId = gate_id_split[1]
+        $.ajax({
+                url: 'API/checkUserCodeExists',
+                type: "GET",
+                data: {user_code: userCode, gate_id: gateId, user_id: userId},
+                dataType: 'json',
+                success: function (data) {
+                  // if the data received is valid ("True")
+                  if (data == "True") {
+                    document.getElementById('red-light').style.backgroundColor = "black"
+                    document.getElementById('green-light').style.backgroundColor = "green"
+                    $("#gateOpenText").show()
+                    $("#gateInvalidCodeText").hide()
+                    // wait 5 seconds and execute changeToGateLocked
+                    setTimeout(changeToGateLocked, 5000)
+                    return "True"
+                  }
+                  else {
+                    keepGateLockedState()
+                    setTimeout(changeToGateLocked, 2000)
+                    return "False"
+                  }
+                }
+            });
+    }
+    function onScanError(errorMessage) {
+      //handle scan error
+    }
+    var html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess, onScanError);
+    </script>
+
+</html>

@@ -1,0 +1,27 @@
+{% extends 'layout_user.html' %}
+
+{% block content %}
+
+
+<h3>Here Is Your QR Code:</h3>
+
+<p id="qrcode" style:hide >{{qr_code}}</p>
+
+<canvas id="qr-format"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>document.getElementById("qrcode").style.display = "none"</script>
+<script>
+    /* JS comes here */
+    var qr ;
+    (function() {
+        var codigo = document.getElementById('qrcode').textContent;
+        qr = new QRious({
+            element: document.getElementById('qr-format'),
+            size: 200,
+            value: codigo
+        });
+    })();
+    
+</script>
+{% endblock %}

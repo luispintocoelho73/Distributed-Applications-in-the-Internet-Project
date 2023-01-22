@@ -1,0 +1,19 @@
+{% extends 'layout_admin.html' %}
+
+{% block content %}
+<h3>Gate</h3>
+<table style="width: 100%">
+    <tr>
+        <th>ID</th>
+        <th>Location</th>
+        <th>Gate Opens</th>
+        <th>Secret</th>
+      </tr>
+      <tr>
+        {% for gates in dict.values() %}
+        <td>{{gates}}</td>
+        {% endfor %}
+      </tr>
+</table>
+  
+{% endblock %}
