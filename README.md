@@ -1,4 +1,4 @@
-# Distributed-Applications-in-the-Internet-Project
+# Distributed-Applications-in-the-Internet-Python-Project
 
 Project for the Distributed Applications in the Internet Course (https://fenix.tecnico.ulisboa.pt/disciplinas/ADInt/2021-2022/1-semestre/project)
 
